@@ -1,7 +1,9 @@
+import os
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
+from starlette.responses import JSONResponse
 
 import models
 import schemas
@@ -9,6 +11,9 @@ import crud
 from api import deps
 
 router = APIRouter()
+
+# Dossier pour stocker les images
+IMAGE_DIR = "images"
 
 
 @router.get('/', response_model=schemas.ResponseListingImages)
@@ -96,3 +101,21 @@ def delete_listing_images(
 
     listing_images = crud.listing_images.remove(db=db, id=listing_images_id)
     return listing_images
+
+
+# Endpoint pour télécharger une image
+@router.post("/upload-image/")
+async def upload_image(file: UploadFile = File(...)):
+    # Vérifie si le fichier est une image
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Le fichier doit être une image.")
+
+    # Génère un nom de fichier unique
+    file_name = f"{os.urandom(16).hex()}_{file.filename}"
+    file_path = os.path.join(IMAGE_DIR, file_name)
+
+    # Sauvegarde le fichier
+    with open(file_path, "wb") as buffer:
+        buffer.write(await file.read())
+
+    return file_path
