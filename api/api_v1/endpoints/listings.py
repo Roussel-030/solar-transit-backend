@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 @router.get('/', response_model=schemas.ResponseListings)
-def read_listingss(
+def read_listings(
         db: Session = Depends(deps.get_db),
         current_user: models.Users = Depends(deps.get_current_user),
 ) -> Any:

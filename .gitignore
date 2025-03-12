@@ -1,3 +1,20 @@
-/venv
-.env
+# Byte-compiled files
 __pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+
+# IDE and editor files
+.vscode/
+.idea/
+
+# Logs and databases
+*.log
+*.sqlite3
+
+# Distribution and build files
+dist/
+build/
+*.egg-info/
+.env
