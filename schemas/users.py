@@ -11,7 +11,7 @@ class UsersBase(BaseModel):
 class UsersCreate(UsersBase):
     username: str
     password: str
-    role: str
+    role: str = "user"
 
 
 class UsersUpdate(UsersBase):

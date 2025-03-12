@@ -35,10 +35,7 @@ def create_listings(
     """
     Create new listings.
     """
-    if crud.users.is_superuser(current_user):
-        listings = crud.listings.create(db=db, obj_in=listings_in)
-    else:
-        raise HTTPException(status_code=400, detail='Not enough permissions')
+    listings = crud.listings.create(db=db, obj_in=listings_in)
     return listings
 
 
@@ -56,6 +53,10 @@ def update_listings(
     listings = crud.listings.get(db=db, id=listings_id)
     if not listings:
         raise HTTPException(status_code=404, detail='Listings not found')
+
+    if listings.created_by != current_user.id:
+        raise HTTPException(status_code=404, detail='Not enaught permission')
+
     listings = crud.listings.update(db=db, db_obj=listings, obj_in=listings_in)
     return listings
 
@@ -89,5 +90,9 @@ def delete_listings(
     listings = crud.listings.get(db=db, id=listings_id)
     if not listings:
         raise HTTPException(status_code=404, detail='Listings not found')
+
+    if listings.created_by != current_user.id:
+        raise HTTPException(status_code=404, detail='Not enaught permission')
+
     listings = crud.listings.remove(db=db, id=listings_id)
     return listings

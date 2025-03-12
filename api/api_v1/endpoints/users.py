@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 @router.get('/', response_model=schemas.ResponseUsers)
-def read_userss(
+def read_users(
         db: Session = Depends(deps.get_db),
         current_user: models.Users = Depends(deps.get_current_user),
 ) -> Any:
@@ -35,7 +35,7 @@ def create_users(
     """
     Create new users.
     """
-    if crud.users.is_superuser(current_user):
+    if crud.users.is_admin(current_user):
         users = crud.users.create(db=db, obj_in=users_in)
     else:
         raise HTTPException(status_code=400, detail='Not enough permissions')

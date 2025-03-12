@@ -35,7 +35,7 @@ def create_categories(
     """
     Create new categories.
     """
-    if crud.users.is_superuser(current_user):
+    if crud.users.is_admin(current_user):
         categories = crud.categories.create(db=db, obj_in=categories_in)
     else:
         raise HTTPException(status_code=400, detail='Not enough permissions')
@@ -56,7 +56,11 @@ def update_categories(
     categories = crud.categories.get(db=db, id=categories_id)
     if not categories:
         raise HTTPException(status_code=404, detail='Categories not found')
-    categories = crud.categories.update(db=db, db_obj=categories, obj_in=categories_in)
+
+    if crud.users.is_admin(current_user):
+        categories = crud.categories.update(db=db, db_obj=categories, obj_in=categories_in)
+    else:
+        raise HTTPException(status_code=400, detail='Not enough permissions')
     return categories
 
 
@@ -89,5 +93,9 @@ def delete_categories(
     categories = crud.categories.get(db=db, id=categories_id)
     if not categories:
         raise HTTPException(status_code=404, detail='Categories not found')
-    categories = crud.categories.remove(db=db, id=categories_id)
+
+    if crud.users.is_admin(current_user):
+        categories = crud.categories.remove(db=db, id=categories_id)
+    else:
+        raise HTTPException(status_code=400, detail='Not enough permissions')
     return categories
