@@ -6,8 +6,6 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel
 
-from schemas import Listings
-
 
 class ListingImagesBase(BaseModel):
     image_url: Optional[str]
@@ -32,7 +30,7 @@ class ListingImagesInDBBase(ListingImagesBase):
 
 
 class ListingImages(ListingImagesInDBBase):
-    listing: Optional[Listings]
+    pass
 
 
 class ListingImagesInDB(ListingImagesInDBBase):
@@ -42,7 +40,6 @@ class ListingImagesInDB(ListingImagesInDBBase):
 class ResponseListingImages(BaseModel):
     count: int
     data: Optional[List[ListingImages]]
-
 
 # begin #
 # ---write your code here--- #

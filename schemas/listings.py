@@ -3,8 +3,10 @@
 # end #
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Any
 from pydantic import BaseModel
+
+from .listing_images import ListingImages
 from .categories import Categories
 from .users import Users
 
@@ -43,6 +45,7 @@ class ListingsInDBBase(ListingsBase):
 class Listings(ListingsInDBBase):
     categories: Optional[Categories] = None
     users: Optional[Users] = None
+    images: List[ListingImages] = []
 
 
 class ListingsInDB(ListingsInDBBase):

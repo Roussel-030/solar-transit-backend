@@ -1,4 +1,6 @@
 from typing import Optional, List, Any
+
+from sqlalchemy import and_, func
 from sqlalchemy.orm import Session
 
 from crud.base import CRUDBase
@@ -13,14 +15,45 @@ class CRUDListings(CRUDBase[Listings, ListingsCreate, ListingsUpdate]):
     def get_multi(self, db: Session, *, skip: int = 0, limit: int = 100) -> List[Listings]:
         return db.query(Listings).offset(skip).limit(limit).all()
 
-    def get_by_field(self, db: Session, *, field: str, value: Any) -> Optional[Listings]:
-        return db.query(Listings).filter(getattr(Listings, field) == value).first()
+    def search(
+            self,
+            db: Session,
+            name: str = None,
+            category_id: int = None
+    ) -> List[Listings]:
+        filter_ = []
+        if name:
+            filter_.append(func.lower(Listings.name).like(f"%{name.lower()}%"))
+        if category_id:
+            filter_.append(Listings.category_id == category_id)
 
-    def delete(self, db: Session, *, id: int) -> Listings:
-        obj = db.query(Listings).filter(Listings.id == id).first()
-        db.delete(obj)
-        db.commit()
-        return obj
+        query = (
+            db.query(self.model)
+            .filter(and_(*filter_))
+        )
+
+        result = query.all()
+        return result
+
+    def search_count(
+            self,
+            db: Session,
+            name: str = None,
+            category_id: int = None
+    ) -> List[Listings]:
+        filter_ = []
+        if name:
+            filter_.append(func.lower(Listings.name).like(f"%{name.lower()}%"))
+        if category_id:
+            filter_.append(Listings.category_id == category_id)
+
+        query = (
+            db.query(self.model)
+            .filter(and_(*filter_))
+        )
+
+        result = query.count()
+        return result
 
 
 listings = CRUDListings(Listings)

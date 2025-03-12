@@ -10,5 +10,8 @@ class CRUDListingImages(CRUDBase[ListingImages, ListingImagesCreate, ListingImag
     def get_by_id(self, db: Session, *, id: int) -> Optional[ListingImages]:
         return db.query(ListingImages).filter(ListingImages.id == id).first()
 
+    def get_by_listing(self, db: Session, *, listing_id: int) -> Optional[ListingImages]:
+        return db.query(ListingImages).filter(ListingImages.listing_id == listing_id).all()
+
 
 listing_images = CRUDListingImages(ListingImages)

@@ -25,6 +25,28 @@ def read_listings(
     return response
 
 
+@router.get('/search', response_model=schemas.ResponseListings)
+def search_listings(
+        db: Session = Depends(deps.get_db),
+        *,
+        name: str = None,
+        category_id: int = None,
+        current_user: models.Users = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Retrieve listingss.
+    """
+
+    if name or category_id:
+        listings = crud.listings.search(db=db, name=name, category_id=category_id)
+        count = crud.listings.search_count(db=db, name=name, category_id=category_id)
+        response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
+    else:
+        listings = crud.listings.get_multi(db=db, name=name)
+        count = crud.listings.get_count(db=db)
+        response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
+    return response
+
 @router.post('/', response_model=schemas.Listings)
 def create_listings(
         *,
@@ -73,6 +95,8 @@ def read_listings(
     Get listings by ID.
     """
     listings = crud.listings.get(db=db, id=listings_id)
+    images = crud.listing_images.get_by_listing(db=db, listing_id=listings.id)
+    listings.images = jsonable_encoder(images)
     if not listings:
         raise HTTPException(status_code=404, detail='Listings not found')
     return listings
