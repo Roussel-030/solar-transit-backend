@@ -16,7 +16,6 @@ class ListingsBase(BaseModel):
     latitude: Optional[float]
     longitude: Optional[float] = None
     category_id: Optional[int]
-    created_by: Optional[int]
 
 
 class ListingsCreate(ListingsBase):
@@ -25,7 +24,7 @@ class ListingsCreate(ListingsBase):
     address: str
     latitude: float
     category_id: int
-    created_by: int
+    created_by: Optional[int] = None
 
 
 class ListingsUpdate(ListingsBase):

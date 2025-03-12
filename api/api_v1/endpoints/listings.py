@@ -19,8 +19,8 @@ def read_listings(
     """
     Retrieve listingss.
     """
-    listingss = crud.listings.get_multi_where_array(db=db)
-    count = crud.listings.get_count_where_array(db=db)
+    listingss = crud.listings.get_multi(db=db)
+    count = crud.listings.get_count(db=db)
     response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listingss)})
     return response
 
@@ -35,6 +35,7 @@ def create_listings(
     """
     Create new listings.
     """
+    listings_in.created_by = current_user.id
     listings = crud.listings.create(db=db, obj_in=listings_in)
     return listings
 

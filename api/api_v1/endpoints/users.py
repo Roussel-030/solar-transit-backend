@@ -19,8 +19,8 @@ def read_users(
     """
     Retrieve users.
     """
-    users = crud.users.get_multi_where_array(db=db)
-    count = crud.users.get_count_where_array(db=db)
+    users = crud.users.get_multi(db=db)
+    count = crud.users.get_count(db=db)
     response = schemas.ResponseUsers(**{'count': count, 'data': jsonable_encoder(users)})
     return response
 

@@ -19,8 +19,8 @@ def read_categories(
     """
     Retrieve categories.
     """
-    categories = crud.categories.get_multi_where_array(db=db)
-    count = crud.categories.get_count_where_array(db=db)
+    categories = crud.categories.get_multi(db=db)
+    count = crud.categories.get_count(db=db)
     response = schemas.ResponseCategories(**{'count': count, 'data': jsonable_encoder(categories)})
     return response
 
