@@ -11,3 +11,4 @@ class Token(BaseModel):
 class TokenPayload(BaseModel):
     id: Optional[int] = None
     username: Optional[EmailStr]
+    role: str
