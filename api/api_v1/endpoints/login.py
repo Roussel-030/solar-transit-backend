@@ -32,7 +32,7 @@ def signup(
         expires_delta=access_token_expires,
     )
 
-    return {"access_token": token, "token_type": "Bearer"}
+    return {"access_token": token, "token_type": "Bearer", "role": user.role}
 
 
 @router.post("/access-token", response_model=schemas.Token)
@@ -59,7 +59,7 @@ def login_access_token(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    return {"access_token": token, "token_type": "Bearer"}
+    return {"access_token": token, "token_type": "Bearer", "role": user.role}
 
 
 @router.post("/verify-token", response_model=schemas.Users)
