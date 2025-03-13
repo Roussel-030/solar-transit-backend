@@ -1,7 +1,9 @@
+import os
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
+from starlette.responses import FileResponse
 
 import models
 import schemas
@@ -10,6 +12,7 @@ from api import deps
 
 router = APIRouter()
 
+IMAGE_DIR = "images"
 
 @router.get('/', response_model=schemas.ResponseListings)
 def read_listings(
@@ -23,9 +26,6 @@ def read_listings(
     """
     listings = crud.listings.get_multi(db=db, skip=offset, limit=limit)
     count = crud.listings.get_count(db=db)
-    for listing in listings:
-        images = crud.listing_images.get_by_listing(db=db, listing_id=listing.id)
-        listing.images = jsonable_encoder(images)
     response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
     return response
 
@@ -100,8 +100,6 @@ def read_listings(
     Get listings by ID.
     """
     listings = crud.listings.get(db=db, id=listings_id)
-    images = crud.listing_images.get_by_listing(db=db, listing_id=listings.id)
-    listings.images = jsonable_encoder(images)
     if not listings:
         raise HTTPException(status_code=404, detail='Listings not found')
     return listings
@@ -126,3 +124,28 @@ def delete_listings(
 
     listings = crud.listings.remove(db=db, id=listings_id)
     return listings
+
+
+# Endpoint pour télécharger une image
+@router.post("/upload-image/")
+async def upload_image(file: UploadFile = File(...)):
+    # Vérifie si le fichier est une image
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Le fichier doit être une image.")
+
+    # Génère un nom de fichier unique
+    file_name = f"{os.urandom(16).hex()}_{file.filename}"
+    file_path = os.path.join(IMAGE_DIR, file_name)
+
+    # Sauvegarde le fichier
+    with open(file_path, "wb") as buffer:
+        buffer.write(await file.read())
+
+    return file_name
+
+
+@router.get("/image/")
+def get_file(name_file: str):
+    path = os.getcwd()+"/images/" + name_file
+    if os.path.exists(path):
+        return FileResponse(path=path)
