@@ -14,14 +14,19 @@ router = APIRouter()
 @router.get('/', response_model=schemas.ResponseListings)
 def read_listings(
         db: Session = Depends(deps.get_db),
+        offset: int = 0,
+        limit: int = 20,
         current_user: models.Users = Depends(deps.get_current_user),
 ) -> Any:
     """
     Retrieve listingss.
     """
-    listingss = crud.listings.get_multi(db=db)
+    listings = crud.listings.get_multi(db=db, skip=offset, limit=limit)
     count = crud.listings.get_count(db=db)
-    response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listingss)})
+    for listing in listings:
+        images = crud.listing_images.get_by_listing(db=db, listing_id=listing.id)
+        listing.images = jsonable_encoder(images)
+    response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
     return response
 
 
