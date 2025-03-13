@@ -82,7 +82,7 @@ def update_listings(
     if not listings:
         raise HTTPException(status_code=404, detail='Listings not found')
 
-    if listings.created_by != current_user.id:
+    if listings.created_by != current_user.id and not crud.users.is_admin(current_user):
         raise HTTPException(status_code=404, detail='Not enaught permission')
 
     listings = crud.listings.update(db=db, db_obj=listings, obj_in=listings_in)
@@ -105,7 +105,7 @@ def read_listings(
     return listings
 
 
-@router.delete('/', response_model=schemas.Listings)
+@router.delete('/',)
 def delete_listings(
         *,
         db: Session = Depends(deps.get_db),
@@ -119,11 +119,11 @@ def delete_listings(
     if not listings:
         raise HTTPException(status_code=404, detail='Listings not found')
 
-    if listings.created_by != current_user.id:
+    if listings.created_by != current_user.id and not crud.users.is_admin(current_user):
         raise HTTPException(status_code=404, detail='Not enaught permission')
 
     listings = crud.listings.remove(db=db, id=listings_id)
-    return listings
+    return "deleted"
 
 
 # Endpoint pour télécharger une image

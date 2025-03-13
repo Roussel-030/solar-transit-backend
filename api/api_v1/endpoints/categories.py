@@ -80,7 +80,7 @@ def read_categories(
     return categories
 
 
-@router.delete('/', response_model=schemas.Categories)
+@router.delete('/')
 def delete_categories(
         *,
         db: Session = Depends(deps.get_db),
@@ -98,4 +98,4 @@ def delete_categories(
         categories = crud.categories.remove(db=db, id=categories_id)
     else:
         raise HTTPException(status_code=400, detail='Not enough permissions')
-    return categories
+    return "deleted"
