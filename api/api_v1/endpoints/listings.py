@@ -34,8 +34,8 @@ def read_listings(
 def search_listings(
         db: Session = Depends(deps.get_db),
         *,
-        name: str = None,
-        category_id: int = None,
+        name: str = "",
+        category_id: int = 0,
         current_user: models.Users = Depends(deps.get_current_user),
 ) -> Any:
     """
