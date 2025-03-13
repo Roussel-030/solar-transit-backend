@@ -47,7 +47,7 @@ def search_listings(
         count = crud.listings.search_count(db=db, name=name, category_id=category_id)
         response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
     else:
-        listings = crud.listings.get_multi(db=db, name=name)
+        listings = crud.listings.get_multi(db=db)
         count = crud.listings.get_count(db=db)
         response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
     return response
