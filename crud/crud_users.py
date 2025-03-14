@@ -1,4 +1,4 @@
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Union, Dict
 from sqlalchemy.orm import Session
 
 from core.security import verify_password, get_password_hash
@@ -29,6 +29,19 @@ class CRUDUsers(CRUDBase[Users, UsersCreate, UsersUpdate]):
         db.commit()
         db.refresh(db_obj)
         return db_obj
+
+    def update(
+            self, db: Session, *, db_obj: Users, obj_in: Union[UsersUpdate, Dict[str, Any]]
+    ) -> Users:
+        if isinstance(obj_in, dict):
+            update_data = obj_in
+        else:
+            update_data = obj_in.dict(exclude_unset=True)
+        if "password" in update_data:
+            hashed_password = get_password_hash(update_data["password"])
+            del update_data["password"]
+            update_data["password"] = hashed_password
+        return super().update(db, db_obj=db_obj, obj_in=update_data)
 
     def is_admin(self, user: Users):
         return user.role == UserRole.ADMIN

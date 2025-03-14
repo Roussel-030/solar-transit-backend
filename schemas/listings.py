@@ -6,7 +6,6 @@ from datetime import datetime
 from typing import List, Optional, Any
 from pydantic import BaseModel
 
-from .listing_images import ListingImages
 from .categories import Categories
 from .users import Users
 
@@ -18,6 +17,7 @@ class ListingsBase(BaseModel):
     latitude: Optional[float]
     longitude: Optional[float] = None
     category_id: Optional[int]
+    image_name: Optional[str] = None
 
 
 class ListingsCreate(ListingsBase):
@@ -45,7 +45,6 @@ class ListingsInDBBase(ListingsBase):
 class Listings(ListingsInDBBase):
     categories: Optional[Categories] = None
     users: Optional[Users] = None
-    images: List[ListingImages] = []
 
 
 class ListingsInDB(ListingsInDBBase):

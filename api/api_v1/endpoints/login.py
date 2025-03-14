@@ -15,7 +15,7 @@ from core.config import settings
 router = APIRouter()
 
 
-@router.post("/signup", response_model=schemas.Token)
+@router.post("/signup", response_model=schemas.Users)
 def signup(
         *,
         db: Session = Depends(deps.get_db),
@@ -24,15 +24,13 @@ def signup(
     """
     Create new users.
     """
+    user = crud.users.get_by_username(db=db, username=users_in.username)
+    if user:
+        raise HTTPException(status_code=400, detail="username alreadi exist")
+
     user = crud.users.create(db=db, obj_in=users_in)
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    token = security.create_access_token(
-        data={"id": str(user.id), "username": user.username},
-        expires_delta=access_token_expires,
-    )
-
-    return {"access_token": token, "token_type": "Bearer", "role": user.role}
+    return user
 
 
 @router.post("/access-token", response_model=schemas.Token)
