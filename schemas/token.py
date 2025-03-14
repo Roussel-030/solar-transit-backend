@@ -11,4 +11,4 @@ class Token(BaseModel):
 
 class TokenPayload(BaseModel):
     id: Optional[int] = None
-    username: Optional[EmailStr]
+    username: Optional[str]
