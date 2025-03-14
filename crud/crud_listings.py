@@ -9,22 +9,16 @@ from schemas.listings import ListingsCreate, ListingsUpdate
 
 
 class CRUDListings(CRUDBase[Listings, ListingsCreate, ListingsUpdate]):
-    def get_by_id(self, db: Session, *, id: int) -> Optional[Listings]:
-        return db.query(Listings).filter(Listings.id == id).first()
-
-    def get_multi(self, db: Session, *, skip: int = 0, limit: int = 100) -> List[Listings]:
-        return db.query(Listings).offset(skip).limit(limit).all()
-
     def search(
             self,
             db: Session,
-            name: str = None,
-            category_id: int = None
+            name: str = "",
+            category_id: int = 0
     ) -> List[Listings]:
         filter_ = []
-        if name:
+        if name != "":
             filter_.append(func.lower(Listings.name).like(f"%{name.lower()}%"))
-        if category_id:
+        if category_id != 0:
             filter_.append(Listings.category_id == category_id)
 
         query = (

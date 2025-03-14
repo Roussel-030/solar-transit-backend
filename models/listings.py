@@ -15,6 +15,8 @@ class Listings(Base):
     category_id = Column(Integer, ForeignKey('categories.id'))
     created_by = Column(Integer, ForeignKey('users.id'))
 
+    image_name = Column(String(100))
+
     # default column
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())

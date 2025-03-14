@@ -76,7 +76,7 @@ def read_users(
     return users
 
 
-@router.delete('/', response_model=schemas.Users)
+@router.delete('/')
 def delete_users(
         *,
         db: Session = Depends(deps.get_db),
@@ -90,4 +90,4 @@ def delete_users(
     if not users:
         raise HTTPException(status_code=404, detail='Users not found')
     users = crud.users.remove(db=db, id=users_id)
-    return users
+    return "deleted"

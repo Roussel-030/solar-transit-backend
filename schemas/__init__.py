@@ -17,10 +17,3 @@ from .categories import (
   CategoriesUpdate,  
   ResponseCategories
 )
-
-from .listing_images import (
-  ListingImages,
-  ListingImagesCreate,
-  ListingImagesUpdate,
-  ResponseListingImages
-)

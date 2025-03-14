@@ -40,8 +40,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             *,
             skip: int = 0,
             limit: int = 100,
-            order_by: str = "id",
-            order: str = "DESC",
     ) -> List[ModelType]:
         query = db.query(self.model)
         query = (
