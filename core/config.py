@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     MYSQL_PASSWORD: str = os.getenv("MYSQL_PASSWORD")
     MYSQL_DATABASE: str = os.getenv("MYSQL_DATABASE")
 
+    DEFAULT_USER_ADMIN: str = os.getenv("DEFAULT_USER_ADMIN")
+    DEFAULT_PASSWORD: str = os.getenv("DEFAULT_PASSWORD")
+
     SQLALCHEMY_DATABASE_URI: Any = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
 
     class Config:
