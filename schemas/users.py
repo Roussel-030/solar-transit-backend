@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel
 
@@ -20,6 +21,7 @@ class UsersUpdate(UsersBase):
 
 class UsersInDBBase(UsersBase):
     id: Optional[int]
+    created_at: Optional[datetime]
 
     class Config:
         orm_mode = True
