@@ -9,6 +9,12 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from db.session import SessionLocal
 
+import crud
+import schemas
+from models.users import UserRole
+
+from core.config import settings
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -27,6 +33,11 @@ def init() -> None:
         db = SessionLocal()
         # Try to create session to check if DB is awake
         db.execute(text('Select 1'))
+        admin = crud.users.get_by_username(db=db, username=settings.DEFAULT_USER_ADMIN)
+        if not admin:
+            user_in = schemas.UsersCreate(username=settings.DEFAULT_USER_ADMIN, password=settings.DEFAULT_PASSWORD,
+                                          role=UserRole.ADMIN)
+            crud.users.create(db=db, obj_in=user_in)
     except Exception as e:
         logger.error(e)
         raise e
