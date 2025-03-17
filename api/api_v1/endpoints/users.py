@@ -15,11 +15,13 @@ router = APIRouter()
 def read_users(
         db: Session = Depends(deps.get_db),
         current_user: models.Users = Depends(deps.get_current_user),
+        order_by: str = "role",
+        order: str = "asc"
 ) -> Any:
     """
     Retrieve users.
     """
-    users = crud.users.get_multi(db=db)
+    users = crud.users.get_multi(db=db, order_by=order_by, order=order)
     count = crud.users.get_count(db=db)
     response = schemas.ResponseUsers(**{'count': count, 'data': jsonable_encoder(users)})
     return response

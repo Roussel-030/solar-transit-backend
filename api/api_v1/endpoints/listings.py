@@ -14,18 +14,26 @@ router = APIRouter()
 
 IMAGE_DIR = "images"
 
+
 @router.get('/', response_model=schemas.ResponseListings)
 def read_listings(
         db: Session = Depends(deps.get_db),
         offset: int = 0,
         limit: int = 20,
+        user_id: int = None,
         current_user: models.Users = Depends(deps.get_current_user),
 ) -> Any:
     """
     Retrieve listingss.
     """
-    listings = crud.listings.get_multi(db=db, skip=offset, limit=limit)
-    count = crud.listings.get_count(db=db)
+    if crud.users.is_admin(current_user):
+        filter_ = []
+        if user_id:
+            filter_.append(models.Listings.created_by == user_id)
+    else:
+        filter_ = [models.Listings.created_by == current_user.id]
+    listings = crud.listings.get_multi(db=db, skip=offset, limit=limit, filter_=filter_)
+    count = crud.listings.get_count(db=db, filter_=filter_)
     response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
     return response
 
@@ -36,21 +44,30 @@ def search_listings(
         *,
         name: str = "",
         category_id: int = 0,
+        user_id: int = 0,
         current_user: models.Users = Depends(deps.get_current_user),
 ) -> Any:
     """
     Retrieve listingss.
     """
 
-    if name or category_id:
-        listings = crud.listings.search(db=db, name=name, category_id=category_id)
-        count = crud.listings.search_count(db=db, name=name, category_id=category_id)
+    if name or category_id or user_id:
+        if crud.users.is_admin(current_user):
+            listings = crud.listings.search(db=db, name=name, category_id=category_id, user_id=user_id)
+            count = crud.listings.search_count(db=db, name=name, category_id=category_id, user_id=user_id,
+                                               current_user_id = current_user.id)
+        else:
+            listings = crud.listings.search(db=db, name=name, category_id=category_id, user_id=user_id,
+                                            current_user_id = current_user.id)
+            count = crud.listings.search_count(db=db, name=name, category_id=category_id, user_id=user_id,
+                                               current_user_id = current_user.id)
         response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
     else:
         listings = crud.listings.get_multi(db=db)
         count = crud.listings.get_count(db=db)
         response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
     return response
+
 
 @router.post('/', response_model=schemas.Listings)
 def create_listings(
@@ -105,7 +122,7 @@ def read_listings(
     return listings
 
 
-@router.delete('/',)
+@router.delete('/', )
 def delete_listings(
         *,
         db: Session = Depends(deps.get_db),
@@ -146,6 +163,6 @@ async def upload_image(file: UploadFile = File(...)):
 
 @router.get("/image/")
 def get_file(name_file: str):
-    path = os.getcwd()+"/images/" + name_file
+    path = os.getcwd() + "/images/" + name_file
     if os.path.exists(path):
         return FileResponse(path=path)
