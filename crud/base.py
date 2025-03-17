@@ -2,7 +2,7 @@ from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy import desc
+from sqlalchemy import desc, asc
 from sqlalchemy.orm import (
     Session,
 )
@@ -40,15 +40,25 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             *,
             skip: int = 0,
             limit: int = 100,
+            order_by: str = "id",
+            order: str = "desc"
     ) -> List[ModelType]:
+        # Start with the base query
         query = db.query(self.model)
-        query = (
-            query.order_by(
-                desc(getattr(self.model, "id")),
-            )
-            .offset(skip)
-            .limit(limit)
-        )
+
+        # Determine the sorting order
+        if order.lower() == "asc":
+            order_func = asc
+        else:
+            order_func = desc
+
+        # Apply the sorting
+        query = query.order_by(order_func(getattr(self.model, order_by)))
+
+        # Apply pagination
+        query = query.offset(skip).limit(limit)
+
+        # Execute the query and return the results
         result = query.all()
         return result
 
