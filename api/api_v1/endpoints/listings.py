@@ -50,22 +50,17 @@ def search_listings(
     """
     Retrieve listingss.
     """
-
-    if name or category_id or user_id:
-        if crud.users.is_admin(current_user):
-            listings = crud.listings.search(db=db, name=name, category_id=category_id, user_id=user_id)
-            count = crud.listings.search_count(db=db, name=name, category_id=category_id, user_id=user_id,
-                                               current_user_id = current_user.id)
-        else:
-            listings = crud.listings.search(db=db, name=name, category_id=category_id, user_id=user_id,
-                                            current_user_id = current_user.id)
-            count = crud.listings.search_count(db=db, name=name, category_id=category_id, user_id=user_id,
-                                               current_user_id = current_user.id)
-        response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
+    if crud.users.is_admin(current_user):
+        listings = crud.listings.search(db=db, name=name, category_id=category_id, user_id=user_id)
+        count = crud.listings.search_count(db=db, name=name, category_id=category_id, user_id=user_id,
+                                           current_user_id = current_user.id)
     else:
-        listings = crud.listings.get_multi(db=db)
-        count = crud.listings.get_count(db=db)
-        response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
+        listings = crud.listings.search(db=db, name=name, category_id=category_id, user_id=user_id,
+                                        current_user_id = current_user.id)
+        count = crud.listings.search_count(db=db, name=name, category_id=category_id, user_id=user_id,
+                                           current_user_id = current_user.id)
+    response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
+
     return response
 
 
