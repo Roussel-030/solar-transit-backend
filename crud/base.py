@@ -2,7 +2,7 @@ from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy import desc, asc
+from sqlalchemy import desc, asc, and_
 from sqlalchemy.orm import (
     Session,
 )
@@ -34,6 +34,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         query = db.query(self.model).filter(self.model.id == id)
         return query.first()
 
+    from typing import List, Any, TypeVar
+    from sqlalchemy.orm import Session
+    from sqlalchemy import asc, desc, and_
+
+    ModelType = TypeVar('ModelType')
+
     def get_multi(
             self,
             db: Session,
@@ -41,16 +47,18 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             skip: int = 0,
             limit: int = 100,
             order_by: str = "id",
-            order: str = "desc"
+            order: str = "desc",
+            filter_: List[Any] = None
     ) -> List[ModelType]:
         # Start with the base query
         query = db.query(self.model)
 
+        # Apply filters if any
+        if filter_ is not None and len(filter_) > 0:
+            query = query.filter(and_(*filter_))
+
         # Determine the sorting order
-        if order.lower() == "asc":
-            order_func = asc
-        else:
-            order_func = desc
+        order_func = asc if order.lower() == "asc" else desc
 
         # Apply the sorting
         query = query.order_by(order_func(getattr(self.model, order_by)))
@@ -65,8 +73,15 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get_count(
             self,
             db: Session,
-    ) -> List[ModelType]:
+            filter_: List[Any] = None
+    ) -> int:
         query = db.query(self.model)
+
+        # Apply filters if any
+        if filter_ is not None and len(filter_) > 0:
+            query = query.filter(and_(*filter_))
+
+        # Execute the query and return the count
         result = query.count()
         return result
 

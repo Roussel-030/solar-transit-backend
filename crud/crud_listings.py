@@ -13,13 +13,16 @@ class CRUDListings(CRUDBase[Listings, ListingsCreate, ListingsUpdate]):
             self,
             db: Session,
             name: str = "",
-            category_id: int = 0
+            category_id: int = 0,
+            user_id: int = 0
     ) -> List[Listings]:
         filter_ = []
         if name != "":
             filter_.append(func.lower(Listings.name).like(f"%{name.lower()}%"))
         if category_id != 0:
             filter_.append(Listings.category_id == category_id)
+        if user_id != 0:
+            filter_.append(Listings.created_by == user_id)
 
         query = (
             db.query(self.model)
