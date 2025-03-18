@@ -9,7 +9,7 @@ class Listings(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, nullable=False, unique=True, index=True)
     name = Column(String(80), nullable=False)
     description = Column(Text, nullable=False)
-    address = Column(String(80), nullable=False)
+    address = Column(Text, nullable=False)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float)
     category_id = Column(Integer, ForeignKey('categories.id'))
