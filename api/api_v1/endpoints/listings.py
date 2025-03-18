@@ -52,13 +52,12 @@ def search_listings(
     """
     if crud.users.is_admin(current_user):
         listings = crud.listings.search(db=db, name=name, category_id=category_id, user_id=user_id)
-        count = crud.listings.search_count(db=db, name=name, category_id=category_id, user_id=user_id,
-                                           current_user_id = current_user.id)
+        count = crud.listings.search_count(db=db, name=name, category_id=category_id, user_id=user_id)
     else:
         listings = crud.listings.search(db=db, name=name, category_id=category_id, user_id=user_id,
-                                        current_user_id = current_user.id)
+                                        current_user_id=current_user.id)
         count = crud.listings.search_count(db=db, name=name, category_id=category_id, user_id=user_id,
-                                           current_user_id = current_user.id)
+                                           current_user_id=current_user.id)
     response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
 
     return response
