@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
@@ -9,45 +9,11 @@ import models
 import schemas
 import crud
 from api import deps
+from api.api_v1.endpoints.socket import manager  # Import the manager
 
 router = APIRouter()
 
 IMAGE_DIR = "images"
-
-from fastapi import WebSocket, WebSocketDisconnect
-from fastapi import APIRouter
-
-router = APIRouter()
-
-
-class ConnectionManager:
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_text(message)
-
-
-manager = ConnectionManager()
-
-
-@router.websocket("/ws/listings")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    try:
-        while True:
-            data = await websocket.receive_text()
-            # You can handle incoming messages if needed
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
 
 
 @router.get('/', response_model=schemas.ResponseListings)
@@ -59,7 +25,7 @@ def read_listings(
         current_user: models.Users = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Retrieve listingss.
+    Retrieve listings.
     """
     if crud.users.is_admin(current_user):
         filter_ = []
@@ -83,7 +49,7 @@ def search_listings(
         current_user: models.Users = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Retrieve listingss.
+    Retrieve listings.
     """
     if crud.users.is_admin(current_user):
         listings = crud.listings.search(db=db, name=name, category_id=category_id, user_id=user_id)
@@ -110,7 +76,10 @@ async def create_listings(
     """
     listings_in.created_by = current_user.id
     listings = crud.listings.create(db=db, obj_in=listings_in)
-    await manager.broadcast(jsonable_encoder(listings))
+
+    # Broadcast a message to all connected WebSocket clients
+    await manager.broadcast("Listing created")
+
     return listings
 
 
