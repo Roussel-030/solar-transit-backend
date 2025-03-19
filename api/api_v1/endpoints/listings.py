@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
@@ -9,6 +9,7 @@ import models
 import schemas
 import crud
 from api import deps
+from api.api_v1.endpoints.socket import manager  # Import the manager
 
 router = APIRouter()
 
@@ -24,7 +25,7 @@ def read_listings(
         current_user: models.Users = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Retrieve listingss.
+    Retrieve listings.
     """
     if crud.users.is_admin(current_user):
         filter_ = []
@@ -48,29 +49,23 @@ def search_listings(
         current_user: models.Users = Depends(deps.get_current_user),
 ) -> Any:
     """
-    Retrieve listingss.
+    Retrieve listings.
     """
-
-    if name or category_id or user_id:
-        if crud.users.is_admin(current_user):
-            listings = crud.listings.search(db=db, name=name, category_id=category_id, user_id=user_id)
-            count = crud.listings.search_count(db=db, name=name, category_id=category_id, user_id=user_id,
-                                               current_user_id = current_user.id)
-        else:
-            listings = crud.listings.search(db=db, name=name, category_id=category_id, user_id=user_id,
-                                            current_user_id = current_user.id)
-            count = crud.listings.search_count(db=db, name=name, category_id=category_id, user_id=user_id,
-                                               current_user_id = current_user.id)
-        response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
+    if crud.users.is_admin(current_user):
+        listings = crud.listings.search(db=db, name=name, category_id=category_id, user_id=user_id)
+        count = crud.listings.search_count(db=db, name=name, category_id=category_id, user_id=user_id)
     else:
-        listings = crud.listings.get_multi(db=db)
-        count = crud.listings.get_count(db=db)
-        response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
+        listings = crud.listings.search(db=db, name=name, category_id=category_id, user_id=user_id,
+                                        current_user_id=current_user.id)
+        count = crud.listings.search_count(db=db, name=name, category_id=category_id, user_id=user_id,
+                                           current_user_id=current_user.id)
+    response = schemas.ResponseListings(**{'count': count, 'data': jsonable_encoder(listings)})
+
     return response
 
 
 @router.post('/', response_model=schemas.Listings)
-def create_listings(
+async def create_listings(
         *,
         db: Session = Depends(deps.get_db),
         listings_in: schemas.ListingsCreate,
@@ -81,6 +76,10 @@ def create_listings(
     """
     listings_in.created_by = current_user.id
     listings = crud.listings.create(db=db, obj_in=listings_in)
+
+    # Broadcast a message to all connected WebSocket clients
+    await manager.broadcast("Listing created")
+
     return listings
 
 
